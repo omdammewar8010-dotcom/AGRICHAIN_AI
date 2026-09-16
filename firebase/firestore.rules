@@ -61,14 +61,10 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // 3. Crop Batches collection - Public Read for QR Traceability Passports
+    // 3. Crop Batches collection - Public Read & Registration for Demo / Traceability
     match /crop_batches/{batchId} {
       allow read: if true;
-      allow create: if isFarmer() || isAdmin();
-      allow update: if (isFarmer() && resource.data.farmerId == request.auth.uid) || 
-                       isTransporter() || 
-                       isWarehouseManager() || 
-                       isAdmin();
+      allow create, update: if true;
       allow delete: if isAdmin();
     }
 
@@ -84,8 +80,7 @@ service cloud.firestore {
 
     // 5. Batch Events (Traceability Timeline) - Append-Only Immutable Log (Public QR Passport)
     match /batch_events/{eventId} {
-      allow read: if true;
-      allow create: if isAuthenticated();
+      allow read, create: if true;
       allow update, delete: if isAdmin(); // Traceability logs should be immutable
     }
 

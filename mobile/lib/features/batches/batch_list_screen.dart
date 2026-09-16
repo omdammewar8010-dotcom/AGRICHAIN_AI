@@ -16,7 +16,13 @@ class BatchListScreen extends ConsumerWidget {
         title: const Text('Registered Crop Batches'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white70),
+            tooltip: 'Refresh Batches',
+            onPressed: () => ref.refresh(batchesStreamProvider),
+          ),
+          IconButton(
             icon: const Icon(Icons.add, color: AppTheme.primaryGreen),
+            tooltip: 'Register New Crop Harvest',
             onPressed: () => context.push('/create-batch'),
           ),
         ],

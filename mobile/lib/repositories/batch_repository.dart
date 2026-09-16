@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/crop_batch_model.dart';
 
@@ -10,7 +11,7 @@ class BatchRepository {
     }
   }
 
-  final List<CropBatchModel> _localBatches = [
+  static final List<CropBatchModel> _initialBatches = [
     const CropBatchModel(
       batchId: 'AGRI-2026-TOM-000124',
       cropName: 'Tomato (Roma Hybrid)',
@@ -60,51 +61,116 @@ class BatchRepository {
     ),
   ];
 
-  Stream<List<CropBatchModel>> streamBatches() async* {
-    yield _localBatches;
+  final Map<String, CropBatchModel> _batchesMap = {};
+  late final StreamController<List<CropBatchModel>> _batchesController;
+  StreamSubscription? _firestoreSub;
+
+  BatchRepository() {
+    _batchesController = StreamController<List<CropBatchModel>>.broadcast();
+    for (final b in _initialBatches) {
+      _batchesMap[b.batchId] = b;
+    }
+    _initFirestoreListener();
+  }
+
+  void _initFirestoreListener() {
     try {
       if (_firestore != null) {
-        await for (final snapshot in _firestore!
+        _firestoreSub = _firestore!
             .collection('crop_batches')
             .snapshots()
-            .handleError((_) => null)) {
-          if (snapshot.docs.isNotEmpty) {
-            yield snapshot.docs
-                .map((doc) => CropBatchModel.fromMap(doc.data(), doc.id))
-                .toList();
-          }
-        }
+            .listen(
+          (snapshot) {
+            for (final doc in snapshot.docs) {
+              final batch = CropBatchModel.fromMap(doc.data(), doc.id);
+              _batchesMap[batch.batchId] = batch;
+            }
+            _emitCurrent();
+          },
+          onError: (_) {
+            // Keep in-memory cache on offline or error
+          },
+        );
       }
-    } catch (_) {
-      // Baseline already yielded
+    } catch (_) {}
+  }
+
+  void _emitCurrent() {
+    if (!_batchesController.isClosed) {
+      _batchesController.add(_getCurrentList());
     }
   }
 
+  List<CropBatchModel> _getCurrentList() {
+    final list = _batchesMap.values.toList();
+    list.sort((a, b) => b.harvestDate.compareTo(a.harvestDate));
+    return list;
+  }
+
+  Stream<List<CropBatchModel>> streamBatches() async* {
+    yield _getCurrentList();
+    yield* _batchesController.stream;
+  }
+
   Future<void> createBatch(CropBatchModel batch) async {
-    _localBatches.insert(0, batch);
+    // 1. Immediately store in reactive memory map and emit so UI updates with 0 latency
+    _batchesMap[batch.batchId] = batch;
+    _emitCurrent();
+
+    // 2. Persist to Cloud Firestore
     try {
       if (_firestore != null) {
         await _firestore!
             .collection('crop_batches')
             .doc(batch.batchId)
             .set(batch.toMap());
+
+        // Log initial harvest event in batch_events for complete traceability
+        await _firestore!
+            .collection('batch_events')
+            .doc('EVT-${batch.batchId}-001')
+            .set({
+          'batchId': batch.batchId,
+          'stage': 'harvest',
+          'type': 'harvest_registered',
+          'location': {
+            'name': batch.originAddress,
+            'latitude': batch.originLat,
+            'longitude': batch.originLng,
+          },
+          'temperature': batch.preferredTempMin,
+          'humidity': batch.preferredHumMin,
+          'performedBy': 'Registered Producer',
+          'role': 'farmer',
+          'description': 'Harvest registered: ${batch.quantity.toInt()} ${batch.unit} of ${batch.cropName} (Grade ${batch.qualityGrade}). Quality passport active.',
+          'timestamp': FieldValue.serverTimestamp(),
+        });
       }
     } catch (_) {
-      // In offline/demo mode, stored in local list
+      // Offline fallback: batch is safely preserved in reactive _batchesMap
     }
   }
 
   Future<CropBatchModel?> getBatchById(String batchId) async {
+    if (_batchesMap.containsKey(batchId)) {
+      return _batchesMap[batchId];
+    }
     try {
       if (_firestore != null) {
         final doc = await _firestore!.collection('crop_batches').doc(batchId).get();
         if (doc.exists && doc.data() != null) {
-          return CropBatchModel.fromMap(doc.data()!, doc.id);
+          final batch = CropBatchModel.fromMap(doc.data()!, doc.id);
+          _batchesMap[batch.batchId] = batch;
+          return batch;
         }
       }
     } catch (_) {}
 
-    final found = _localBatches.where((b) => b.batchId == batchId);
-    return found.isNotEmpty ? found.first : _localBatches.first;
+    return _batchesMap.values.isNotEmpty ? _batchesMap.values.first : null;
+  }
+
+  void dispose() {
+    _firestoreSub?.cancel();
+    _batchesController.close();
   }
 }

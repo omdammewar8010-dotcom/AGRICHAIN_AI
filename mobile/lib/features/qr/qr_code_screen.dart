@@ -89,6 +89,16 @@ class QrCodeScreen extends StatelessWidget {
               label: const Text('Share Digital Certificate'),
               onPressed: () => _showDigitalCertificateModal(context),
             ),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.skyBlue,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              icon: const Icon(Icons.inventory_2_outlined, size: 18),
+              label: const Text('View All Registered Batches'),
+              onPressed: () => context.go('/batches'),
+            ),
           ],
         ),
       ),
