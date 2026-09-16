@@ -5,6 +5,18 @@
 
 ---
 
+## 📱 Instant Mobile App Access (Scan & Install)
+
+Scan this QR code with any smartphone camera to instantly open and install **AgriChain AI** as a Progressive Web App (PWA) with zero store downloads required:
+
+<div align="center">
+  <img src="agrichain_app_download_qr.png" width="360" alt="Scan to Open & Install AgriChain AI" />
+  <p><b>Production Live URL:</b> <a href="https://agrichain-ai-hackathon.web.app">https://agrichain-ai-hackathon.web.app</a></p>
+  <p><i>Compatible with iOS (Safari &rarr; Add to Home Screen) & Android (Chrome &rarr; Install App)</i></p>
+</div>
+
+---
+
 ## 🌟 1. Project Overview & Philosophy
 **AgriChain AI** is an enterprise-grade agricultural logistics intelligence and farm-to-fork traceability platform built to protect perishable produce, eliminate cold-chain losses, and bring transparency to farmers, transporters, and consumers.
 
