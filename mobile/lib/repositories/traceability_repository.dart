@@ -58,21 +58,28 @@ class TraceabilityRepository {
     ),
   ];
 
-  Stream<List<BatchEventModel>> streamTimeline(String batchId) {
+  Stream<List<BatchEventModel>> streamTimeline(String batchId) async* {
+    // 1. Immediately yield cached/demo events so UI renders instantly (0ms latency)
+    final initial = _demoTimeline.where((e) => e.batchId == batchId).toList();
+    yield initial.isNotEmpty ? initial : _demoTimeline;
+
+    // 2. Stream live events from Cloud Firestore if available
     try {
-      if (_firestore == null) return Stream.value(_demoTimeline);
-      return _firestore!
-          .collection('batch_events')
-          .where('batchId', isEqualTo: batchId)
-          .snapshots()
-          .map((snap) {
-        if (snap.docs.isEmpty) return _demoTimeline;
-        return snap.docs
-            .map((doc) => BatchEventModel.fromMap(doc.data(), doc.id))
-            .toList();
-      }).handleError((_) => _demoTimeline);
+      if (_firestore != null) {
+        await for (final snap in _firestore!
+            .collection('batch_events')
+            .where('batchId', isEqualTo: batchId)
+            .snapshots()
+            .handleError((_) => null)) {
+          if (snap.docs.isNotEmpty) {
+            yield snap.docs
+                .map((doc) => BatchEventModel.fromMap(doc.data(), doc.id))
+                .toList();
+          }
+        }
+      }
     } catch (_) {
-      return Stream.value(_demoTimeline);
+      // Offline fallback already yielded above
     }
   }
 

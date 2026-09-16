@@ -30,13 +30,13 @@ class _RouteComparisonScreenState extends ConsumerState<RouteComparisonScreen> {
       riskW = 0.20;
     }
 
-    final routesAsync = ref.watch(optimizedRoutesProvider({
-      'timeWeight': timeW,
-      'costWeight': costW,
-      'riskWeight': riskW,
-      'currentTemp': 31.8,
-      'currentDelay': 45.0,
-    }));
+    final routesAsync = ref.watch(optimizedRoutesProvider(RouteParams(
+      timeWeight: timeW,
+      costWeight: costW,
+      riskWeight: riskW,
+      currentTemp: 31.8,
+      currentDelay: 45.0,
+    )));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Multi-Objective Route Engine')),

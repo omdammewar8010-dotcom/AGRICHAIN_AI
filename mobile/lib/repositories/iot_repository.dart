@@ -11,25 +11,21 @@ class IoTRepository {
     }
   }
 
-  Stream<LiveTelemetryModel> streamShipmentTelemetry(String shipmentId) {
+  Stream<LiveTelemetryModel> streamShipmentTelemetry(String shipmentId) async* {
+    yield _fallbackTelemetry();
     try {
-      if (_rtdb == null) {
-        return Stream.periodic(const Duration(seconds: 4), (_) => _fallbackTelemetry());
-      }
-      return _rtdb!
-          .ref('live/shipments/$shipmentId')
-          .onValue
-          .map((event) {
-        if (event.snapshot.value != null && event.snapshot.value is Map) {
-          final map = event.snapshot.value as Map<dynamic, dynamic>;
-          return LiveTelemetryModel.fromMap(map);
+      if (_rtdb != null) {
+        await for (final event in _rtdb!
+            .ref('live/shipments/$shipmentId')
+            .onValue
+            .handleError((_) => null)) {
+          if (event.snapshot.value is Map) {
+            final map = event.snapshot.value as Map<dynamic, dynamic>;
+            yield LiveTelemetryModel.fromMap(map);
+          }
         }
-        return _fallbackTelemetry();
-      }).handleError((_) => _fallbackTelemetry());
-    } catch (_) {
-      // In offline/demo mode, emit realistic simulated tick every 4 seconds
-      return Stream.periodic(const Duration(seconds: 4), (_) => _fallbackTelemetry());
-    }
+      }
+    } catch (_) {}
   }
 
   LiveTelemetryModel _fallbackTelemetry() {

@@ -59,22 +59,79 @@ final timelineStreamProvider = StreamProvider.family<List<BatchEventModel>, Stri
   return ref.watch(traceabilityRepoProvider).streamTimeline(batchId);
 });
 
+// Value-equatable parameter models to prevent infinite Riverpod rebuilds
+class RiskParams {
+  final String cropType;
+  final double temperature;
+  final double humidity;
+  final double delayMinutes;
+
+  const RiskParams({
+    this.cropType = 'Tomato',
+    this.temperature = 21.0,
+    this.humidity = 67.0,
+    this.delayMinutes = 0.0,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RiskParams &&
+          other.cropType == cropType &&
+          other.temperature == temperature &&
+          other.humidity == humidity &&
+          other.delayMinutes == delayMinutes;
+
+  @override
+  int get hashCode => Object.hash(cropType, temperature, humidity, delayMinutes);
+}
+
+class RouteParams {
+  final double timeWeight;
+  final double costWeight;
+  final double riskWeight;
+  final double currentTemp;
+  final double currentDelay;
+
+  const RouteParams({
+    this.timeWeight = 0.35,
+    this.costWeight = 0.25,
+    this.riskWeight = 0.40,
+    this.currentTemp = 21.0,
+    this.currentDelay = 0.0,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RouteParams &&
+          other.timeWeight == timeWeight &&
+          other.costWeight == costWeight &&
+          other.riskWeight == riskWeight &&
+          other.currentTemp == currentTemp &&
+          other.currentDelay == currentDelay;
+
+  @override
+  int get hashCode => Object.hash(timeWeight, costWeight, riskWeight, currentTemp, currentDelay);
+}
+
 // Future Providers
-final riskPredictionProvider = FutureProvider.family<RiskPredictionModel, Map<String, dynamic>>((ref, params) async {
+final riskPredictionProvider = FutureProvider.family<RiskPredictionModel, RiskParams>((ref, params) async {
   return ref.watch(mlRepoProvider).predictRisk(
-        cropType: params['cropType'] ?? 'Tomato',
-        temperature: (params['temperature'] as num?)?.toDouble() ?? 21.0,
-        humidity: (params['humidity'] as num?)?.toDouble() ?? 67.0,
-        delayMinutes: (params['delayMinutes'] as num?)?.toDouble() ?? 0.0,
+        cropType: params.cropType,
+        temperature: params.temperature,
+        humidity: params.humidity,
+        delayMinutes: params.delayMinutes,
       );
 });
 
-final optimizedRoutesProvider = FutureProvider.family<List<RouteOptionModel>, Map<String, dynamic>>((ref, params) async {
+final optimizedRoutesProvider = FutureProvider.family<List<RouteOptionModel>, RouteParams>((ref, params) async {
   return ref.watch(routeRepoProvider).getOptimizedRoutes(
-        timeWeight: params['timeWeight'] ?? 0.35,
-        costWeight: params['costWeight'] ?? 0.25,
-        riskWeight: params['riskWeight'] ?? 0.40,
-        currentTemp: params['currentTemp'] ?? 21.0,
-        currentDelay: params['currentDelay'] ?? 0.0,
+        timeWeight: params.timeWeight,
+        costWeight: params.costWeight,
+        riskWeight: params.riskWeight,
+        currentTemp: params.currentTemp,
+        currentDelay: params.currentDelay,
       );
 });
+

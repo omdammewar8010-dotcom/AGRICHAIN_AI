@@ -37,7 +37,9 @@ class RouteOptionModel {
       overallScore: (json['overallScore'] as num?)?.toDouble() ?? 25.0,
       isRecommended: json['isRecommended'] == true,
       highlights: (json['highlights'] as List?)?.map((e) => e.toString()).toList() ?? [],
-      coldStoragePoints: (json['coldStoragePointsEnRoute'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      coldStoragePoints: (json['coldStoragePointsEnRoute'] as List?)?.map((e) => e.toString()).toList() ??
+          (json['coldStoragePoints'] as List?)?.map((e) => e.toString()).toList() ??
+          [],
     );
   }
 }

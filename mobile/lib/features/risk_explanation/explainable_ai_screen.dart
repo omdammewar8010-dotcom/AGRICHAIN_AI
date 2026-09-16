@@ -12,12 +12,12 @@ class ExplainableAiScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final riskAsync = ref.watch(riskPredictionProvider({
-      'cropType': 'Tomato',
-      'temperature': 31.8,
-      'humidity': 84.0,
-      'delayMinutes': 45.0,
-    }));
+    final riskAsync = ref.watch(riskPredictionProvider(const RiskParams(
+      cropType: 'Tomato',
+      temperature: 31.8,
+      humidity: 84.0,
+      delayMinutes: 45.0,
+    )));
 
     return Scaffold(
       appBar: AppBar(

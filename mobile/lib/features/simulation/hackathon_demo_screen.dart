@@ -55,12 +55,12 @@ class _HackathonDemoScreenState extends ConsumerState<HackathonDemoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final riskAsync = ref.watch(riskPredictionProvider({
-      'cropType': 'Tomato',
-      'temperature': _currentTemp,
-      'humidity': _currentHum,
-      'delayMinutes': _delayMin,
-    }));
+    final riskAsync = ref.watch(riskPredictionProvider(RiskParams(
+      cropType: 'Tomato',
+      temperature: _currentTemp,
+      humidity: _currentHum,
+      delayMinutes: _delayMin,
+    )));
 
     return Scaffold(
       appBar: AppBar(

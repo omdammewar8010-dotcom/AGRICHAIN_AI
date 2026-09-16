@@ -60,20 +60,23 @@ class BatchRepository {
     ),
   ];
 
-  Stream<List<CropBatchModel>> streamBatches() {
+  Stream<List<CropBatchModel>> streamBatches() async* {
+    yield _localBatches;
     try {
-      if (_firestore == null) return Stream.value(_localBatches);
-      return _firestore!
-          .collection('crop_batches')
-          .snapshots()
-          .map((snapshot) {
-        if (snapshot.docs.isEmpty) return _localBatches;
-        return snapshot.docs
-            .map((doc) => CropBatchModel.fromMap(doc.data(), doc.id))
-            .toList();
-      }).handleError((_) => _localBatches);
+      if (_firestore != null) {
+        await for (final snapshot in _firestore!
+            .collection('crop_batches')
+            .snapshots()
+            .handleError((_) => null)) {
+          if (snapshot.docs.isNotEmpty) {
+            yield snapshot.docs
+                .map((doc) => CropBatchModel.fromMap(doc.data(), doc.id))
+                .toList();
+          }
+        }
+      }
     } catch (_) {
-      return Stream.value(_localBatches);
+      // Baseline already yielded
     }
   }
 

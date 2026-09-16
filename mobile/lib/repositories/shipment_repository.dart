@@ -33,17 +33,23 @@ class ShipmentRepository {
     ),
   ];
 
-  Stream<List<ShipmentModel>> streamShipments() {
+  Stream<List<ShipmentModel>> streamShipments() async* {
+    yield _localShipments;
     try {
-      if (_firestore == null) return Stream.value(_localShipments);
-      return _firestore!.collection('shipments').snapshots().map((snap) {
-        if (snap.docs.isEmpty) return _localShipments;
-        return snap.docs
-            .map((doc) => ShipmentModel.fromMap(doc.data(), doc.id))
-            .toList();
-      }).handleError((_) => _localShipments);
+      if (_firestore != null) {
+        await for (final snap in _firestore!
+            .collection('shipments')
+            .snapshots()
+            .handleError((_) => null)) {
+          if (snap.docs.isNotEmpty) {
+            yield snap.docs
+                .map((doc) => ShipmentModel.fromMap(doc.data(), doc.id))
+                .toList();
+          }
+        }
+      }
     } catch (_) {
-      return Stream.value(_localShipments);
+      // Baseline already yielded
     }
   }
 
