@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agrichain_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=False
+      - FIREBASE_PROJECT_ID=agrichain-ai
+      - BYPASS_AUTH_FOR_DEMO=True
+      - ALLOWED_ORIGINS=*
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  simulation:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agrichain_simulation
+    command: ["python", "-u", "/app/../simulation/run_simulation.py"]
+    depends_on:
+      - fastapi
+    environment:
+      - API_BASE=http://fastapi:8000/api/v1/simulation
+    restart: on-failure
+    profiles:
+      - demo

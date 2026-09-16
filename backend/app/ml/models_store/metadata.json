@@ -1,0 +1,35 @@
+{
+  "feature_names": [
+    "cat__crop_type_Banana",
+    "cat__crop_type_Grapes",
+    "cat__crop_type_Greens",
+    "cat__crop_type_Milk",
+    "cat__crop_type_Pomegranate",
+    "cat__crop_type_Tomato",
+    "num__temperature",
+    "num__humidity",
+    "num__temp_excess",
+    "num__hum_deviation",
+    "num__transit_duration_hours",
+    "num__expected_transit_hours",
+    "num__delay_minutes",
+    "num__remaining_dist_km",
+    "num__shelf_life_hours",
+    "num__road_quality",
+    "num__ambient_weather_temp"
+  ],
+  "spoilage_model": {
+    "r2": 0.9903,
+    "mae": 2.23,
+    "algorithm": "RandomForestRegressor(n_estimators=100, max_depth=12)"
+  },
+  "delay_model": {
+    "r2": 0.9999,
+    "mae": 0.1,
+    "algorithm": "GradientBoostingRegressor(n_estimators=80, max_depth=6)"
+  },
+  "anomaly_detector": {
+    "contamination": 0.15,
+    "algorithm": "IsolationForest(n_estimators=100)"
+  }
+}

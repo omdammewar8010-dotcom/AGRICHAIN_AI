@@ -1,0 +1,45 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isPdf() {
+      return request.resource.contentType == 'application/pdf';
+    }
+
+    function isUnderMaxSize() {
+      return request.resource.size < 15 * 1024 * 1024; // 15 MB
+    }
+
+    // Profile photos
+    match /profiles/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || request.auth.token.role == 'admin') && isImage() && isUnderMaxSize();
+    }
+
+    // Crop harvest images & batch certificates
+    match /batches/{batchId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isImage() || isPdf()) && isUnderMaxSize();
+    }
+
+    // Shipment and transit inspection documents
+    match /shipments/{shipmentId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isImage() || isPdf()) && isUnderMaxSize();
+    }
+
+    // QR Codes
+    match /qr_codes/{batchId}.png {
+      allow read: if true; // Publicly verifiable QR images
+      allow write: if isAuthenticated();
+    }
+  }
+}

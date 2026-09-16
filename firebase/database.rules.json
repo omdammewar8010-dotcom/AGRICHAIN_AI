@@ -1,0 +1,25 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    "live": {
+      "shipments": {
+        "$shipmentId": {
+          ".read": "auth != null",
+          ".write": "auth != null",
+          ".indexOn": ["timestamp", "deviceStatus", "anomalyFlag"]
+        }
+      },
+      "devices": {
+        "$deviceId": {
+          ".read": "auth != null",
+          ".write": "auth != null",
+          ".indexOn": ["lastSeen", "online"]
+        }
+      },
+      "simulation": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    }
+  }
+}
