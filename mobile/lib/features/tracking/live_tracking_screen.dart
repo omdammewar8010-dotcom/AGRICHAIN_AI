@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/sensor_gauge.dart';
 import '../../core/widgets/risk_badge.dart';
+import '../../core/widgets/google_map_view.dart';
 import '../../providers/providers.dart';
 
 class LiveTrackingScreen extends ConsumerWidget {
@@ -46,109 +47,57 @@ class LiveTrackingScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Simulated High-Tech Map Canvas with Coordinates
+                // Google Maps Live GPS Route & Satellite Telemetry
+                GoogleMapView(
+                  currentLat: telem.latitude,
+                  currentLng: telem.longitude,
+                  originLat: 19.9975,
+                  originLng: 73.7898,
+                  destLat: 19.0760,
+                  destLng: 72.8777,
+                  originName: 'Nashik Valley Hub',
+                  destName: 'APMC Market Vashi',
+                  currentSpeed: telem.speed,
+                  isBreached: isBreached,
+                  height: 250,
+                ),
+                const SizedBox(height: 16),
+
+                // Device telemetry status strip
                 Container(
-                  height: 200,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: AppTheme.darkCard,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isBreached ? AppTheme.criticalRed.withOpacity(0.5) : AppTheme.darkBorder,
-                      width: isBreached ? 1.5 : 1.0,
-                    ),
-                    gradient: RadialGradient(
-                      center: Alignment.center,
-                      radius: 1.2,
-                      colors: [
-                        AppTheme.darkSurface,
-                        AppTheme.darkBg,
-                      ],
-                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.darkBorder),
                   ),
-                  child: Stack(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Grid map lines
-                      CustomPaint(
-                        size: const Size(double.infinity, 200),
-                        painter: _MapGridPainter(),
-                      ),
-                      // Vehicle Pin
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: isBreached ? AppTheme.criticalRed : AppTheme.primaryGreen,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isBreached ? AppTheme.criticalRed : AppTheme.primaryGreen).withOpacity(0.4),
-                                    blurRadius: 16,
-                                    spreadRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(Icons.local_shipping, color: Colors.white, size: 24),
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: telem.deviceStatus == 'online' ? AppTheme.primaryGreen : AppTheme.criticalRed,
+                              shape: BoxShape.circle,
                             ),
-                            const SizedBox(height: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppTheme.darkBg.withOpacity(0.85),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '${telem.latitude.toStringAsFixed(4)}° N, ${telem.longitude.toStringAsFixed(4)}° E',
-                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'IoT Node: ${telem.deviceStatus.toUpperCase()}',
+                            style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: telem.deviceStatus == 'online' ? AppTheme.primaryGreen : AppTheme.criticalRed,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                telem.deviceStatus.toUpperCase(),
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
+                      Text(
+                        '⚡ Battery: ${telem.battery}%',
+                        style: const TextStyle(color: Colors.white70, fontSize: 11),
                       ),
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '🔋 ${telem.battery}%',
-                            style: const TextStyle(color: Colors.white, fontSize: 11),
-                          ),
-                        ),
+                      Text(
+                        '🛰️ GPS: 9 Sats (RTK)',
+                        style: const TextStyle(color: AppTheme.primaryGreen, fontSize: 11, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -265,23 +214,4 @@ class LiveTrackingScreen extends ConsumerWidget {
       ),
     );
   }
-}
-
-class _MapGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.04)
-      ..strokeWidth = 1.0;
-
-    for (double i = 0; i < size.width; i += 30) {
-      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
-    }
-    for (double i = 0; i < size.height; i += 30) {
-      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

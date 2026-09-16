@@ -5,6 +5,9 @@ class AppConstants {
   // FastAPI Base URL (Local emulator/device default or desktop)
   static const String apiBaseUrl = 'http://127.0.0.1:8000/api/v1';
 
+  // Google Maps API Key (Dedicated Maps API key on agrichain-ai-hackathon)
+  static const String googleMapsApiKey = 'AIzaSyAoII5Nbw6q9woVYFgeTJ-CtS31n6dwHPQ';
+
   // Demo Fallback Flag
   static const bool useMockFallbackIfFirebaseOffline = true;
 
