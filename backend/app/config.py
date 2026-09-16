@@ -11,10 +11,10 @@ class Settings(BaseSettings):
 
     # Firebase Admin SDK settings
     FIREBASE_CREDENTIALS_PATH: Optional[str] = None
-    FIREBASE_PROJECT_ID: Optional[str] = "agrichain-ai"
+    FIREBASE_PROJECT_ID: Optional[str] = "agrichain-ai-hackathon"
     FIREBASE_CLIENT_EMAIL: Optional[str] = None
     FIREBASE_PRIVATE_KEY: Optional[str] = None
-    FIREBASE_DATABASE_URL: Optional[str] = "https://agrichain-ai-default-rtdb.firebaseio.com"
+    FIREBASE_DATABASE_URL: Optional[str] = "https://agrichain-ai-hackathon-default-rtdb.firebaseio.com"
 
     # AI / Gemini API
     GEMINI_API_KEY: Optional[str] = None

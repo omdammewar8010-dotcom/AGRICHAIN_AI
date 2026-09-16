@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "332991210562",
+    "project_id": "agrichain-ai-hackathon",
+    "storage_bucket": "agrichain-ai-hackathon.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332991210562:android:d9d65cce40757e0e39b9db",
+        "android_client_info": {
+          "package_name": "com.agrichain.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3lJ8o9kphfuTpOkuf-Wyh7nZQw3dNeiY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
